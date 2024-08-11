@@ -1,0 +1,64 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email String @unique
+  hash String
+
+  firstName String?
+  lastName String?
+   watchlists Watchlist[]    // Relation to Watchlist
+}
+
+model Movie {
+  id        Int      @id @default(autoincrement())
+  tmdbId    Int      @unique
+  title     String
+  overview  String
+  releaseDate DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  avgRating   Float?   @default(0)
+  ratings     Rating[]
+  watchlists  Watchlist[]  // Relation to Watchlist
+  genres      Genre[]
+}
+
+model Rating {
+  id       Int      @id @default(autoincrement())
+  movieId  Int
+  userId   Int      // Assuming you have a User model, otherwise use a string or another type
+  rating   Float    // Rating value, e.g., from 1.0 to 5.0
+  movie    Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  
+}
+
+model Watchlist {
+  id      Int    @id @default(autoincrement())
+  movieId Int
+  userId  Int
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Genre {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  movies  Movie[]
+}
